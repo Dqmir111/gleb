@@ -1,0 +1,125 @@
+openQuestion();
+portfolioRange();
+whyWeSlider();
+
+function portfolioRange() {
+    const range = document.querySelector('#portfolio_range');
+	const portfolio = document.querySelector('.portfolio_items');
+
+	const TIMER_DELAY = 5000;
+	const SWIPE_RANGE = 50;
+	const steps = [386, 375];
+
+	const itemsCount = portfolio.children.length - 1;
+
+	let x0 = 0;
+
+	range.step = getStep();
+	range.max = Math.ceil(Number(range.step) * (itemsCount - 2));
+
+	let timer = 0;
+	afterTime(TIMER_DELAY);
+
+	range.addEventListener('input', doMove);
+
+	portfolio.addEventListener('mousedown', lock);
+	portfolio.addEventListener('touchstart', lock);
+
+	portfolio.addEventListener('mouseup', move);
+	portfolio.addEventListener('touchend', move);
+
+	function doMove() {
+		portfolio.style.transform = `translateX(-${range.value}px)`;
+		afterTime(TIMER_DELAY);
+	}
+
+	function afterTime(delay) {
+		clearInterval(timer);
+		timer = setInterval(() => {
+			if (Math.ceil(Number(range.value)) >= Number(range.max)) {
+				range.value = 0;
+			} else {
+				range.value = Number(range.value) + Number(range.step);
+			}
+			doMove();
+		}, delay);
+	}
+
+	function getStep() {
+		let width = window.innerWidth;
+		let step = steps[0];
+		if (width < 667){
+			step = steps[1];
+		}
+		return step;
+	}
+
+	function unify(e) {	return e.changedTouches ? e.changedTouches[0] : e };
+
+	function lock(e) { x0 = unify(e).clientX };
+
+	function move(e) {
+		if(x0 || x0 === 0) {
+			let dx = unify(e).clientX - x0; 
+			let sign = Math.sign(dx);
+			if	(sign > 0 && Math.abs(dx) > SWIPE_RANGE) {
+				range.value = Number(range.value) - Number(range.step); 
+			}
+			if	(sign < 0 && Math.abs(dx) > SWIPE_RANGE) {
+				range.value = Number(range.value) + Number(range.step); 
+			}
+			doMove();
+		}
+	};
+}
+
+function whyWeSlider() {
+  const field = document.querySelector('.why_we_cards');
+  const next = document.querySelector('#why_we_next');
+  const prev = document.querySelector('#why_we_prev');
+
+  let i = 0;
+
+  next.addEventListener('click', () => {
+    let { step, maxLength } = checkLength();
+    if (i < maxLength) {
+      i += 1;
+      const move = i * step;
+      field.style.transform = `translate(-${move}%)`;
+    }
+  });
+
+  prev.addEventListener('click', () => {
+    let { step } = checkLength();
+    if (i > 0) {
+      i -= 1;
+      const move = i * step;
+      field.style.transform = `translate(-${move}%)`;
+    }
+  });
+
+  function checkLength() {
+    const width = window.innerWidth;
+    let step = 33.33;
+    let maxLength = 2;
+    if (width < 667) {
+      step = 100;
+      maxLength = 4;
+    }
+    return { step, maxLength };
+  }
+}
+
+function openQuestion() {
+  const questions = ['#calc_question1', '#calc_question2', '#calc_question3'];
+  const answers = ['#calc_answer1', '#calc_answer2', '#calc_answer3'];
+
+  questions.map((qId, i) => {
+    const q = document.querySelector(qId);
+    const a = document.querySelector(answers[i]);
+    q.addEventListener('click', () => {
+      a.classList.toggle('show_block');
+      q.querySelector('.calc_button').classList.toggle('calc_button_active');
+    });
+  });
+}
